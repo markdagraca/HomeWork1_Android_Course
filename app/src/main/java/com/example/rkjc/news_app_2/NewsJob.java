@@ -9,15 +9,11 @@ import com.firebase.jobdispatcher.JobService;
 
 public class NewsJob extends JobService {
     String TAG="NewsJob";
-    NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(this, CHANNEL_ID)
-            .setContentTitle(textTitle)
-            .setContentText(textContent)
-            .setPriority(NotificationCompat.PRIORITY_DEFAULT);
     @Override
 
     public boolean onStartJob(JobParameters job) {
         Log.d(TAG, "onStartJob: ");
-        new NewsRepository(getApplication()).sync();;
+        new NewsRepository(getApplication()).sync();
         return false;
     }
 

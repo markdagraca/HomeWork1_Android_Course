@@ -20,7 +20,8 @@ public class JsonUtils {
             for(int i=0;i<articles.length();i++)
             {
                 JSONObject temp=articles.getJSONObject(i);
-                output.add(new NewsItem((String)temp.get("title"),(String)temp.get("description"),(String)temp.get("url"),(String)temp.get("publishedAt")));
+                output.add(new NewsItem((String)temp.get("title"),"date:"+(String)temp.get("publishedAt")+" " +(String)temp.get("description"),
+                        (String)temp.get("url"),(String)temp.get("publishedAt"),(String)temp.get("urlToImage")));
 
 
             }

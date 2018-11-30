@@ -1,5 +1,6 @@
 package com.example.rkjc.news_app_2;
 
+import android.arch.lifecycle.LiveData;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Network;
@@ -10,11 +11,18 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.view.View.OnClickListener;
 
+import com.example.rkjc.news_app_2.Database.NewsItemViewModel;
+import com.firebase.jobdispatcher.FirebaseJobDispatcher;
+import com.firebase.jobdispatcher.GooglePlayDriver;
+import com.squareup.picasso.Picasso;
+
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 
@@ -22,7 +30,7 @@ public class NewsRecyclerViewAdapter  extends RecyclerView.Adapter<NewsRecyclerV
     final private ListItemClickListner mOnClickListener;
 
 
-    private ArrayList<NewsItem> newsItems;
+    private List<NewsItem> newsItems;
 
     public interface ListItemClickListner{
         void onListItemClick(int clickedItemIndex);
@@ -30,21 +38,23 @@ public class NewsRecyclerViewAdapter  extends RecyclerView.Adapter<NewsRecyclerV
     }
 
 
-    NewsQueryTask newsTask;
+    NewsItemViewModel model;
+//    NewsQueryTask newsTask;
 
 
 
-    public NewsRecyclerViewAdapter(ListItemClickListner listener) {
+    public NewsRecyclerViewAdapter(ListItemClickListner listener, NewsItemViewModel model) {
 
         newsItems=new ArrayList<NewsItem>();
-        newsTask=new NewsQueryTask(this);
+//        newsTask=new NewsQueryTask(this);
         mOnClickListener=listener;
 
+        this.model=model;
 
 
 
 
-        newsTask.execute(newsItems);
+//        newsTask.execute(newsItems);
 
 
         Log.d("Adp2","Size: "+ String.valueOf(newsItems.size()));
@@ -55,6 +65,8 @@ public class NewsRecyclerViewAdapter  extends RecyclerView.Adapter<NewsRecyclerV
 
 
     }
+
+
 
     @NonNull
     @Override
@@ -68,6 +80,12 @@ public class NewsRecyclerViewAdapter  extends RecyclerView.Adapter<NewsRecyclerV
         NewsViewHolder viewHolder=new NewsViewHolder(view);
 
         return viewHolder;
+    }
+    public void update(List<NewsItem> newsItems)
+    {
+
+        this.newsItems=newsItems;
+        notifyDataSetChanged();
     }
 
     @Override
@@ -92,12 +110,15 @@ public class NewsRecyclerViewAdapter  extends RecyclerView.Adapter<NewsRecyclerV
     public class NewsViewHolder extends RecyclerView.ViewHolder implements OnClickListener
     {
         TextView title,description,date;
+        ImageView image;
 
         public NewsViewHolder(View itemView) {
             super(itemView);
             title=itemView.findViewById(R.id.title);
             description=itemView.findViewById(R.id.description);
-            date=itemView.findViewById(R.id.date);
+            image=itemView.findViewById(R.id.imageView2);
+
+
             itemView.setOnClickListener(this);
 
         }
@@ -105,8 +126,7 @@ public class NewsRecyclerViewAdapter  extends RecyclerView.Adapter<NewsRecyclerV
         {
             title.setText("title: "+newsItems.get(i).title);
             description.setText("description: "+newsItems.get(i).description);
-            date.setText("date: "+newsItems.get(i).date);
-
+            Picasso.get().load(newsItems.get(i).thumbURL).into(image);
         }
 
 

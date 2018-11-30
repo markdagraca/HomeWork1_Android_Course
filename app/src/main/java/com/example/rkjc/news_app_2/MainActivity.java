@@ -1,45 +1,55 @@
 package com.example.rkjc.news_app_2;
 
-import android.content.Context;
+import android.arch.lifecycle.ViewModelProvider;
+import android.arch.lifecycle.ViewModelProviders;
 import android.content.Intent;
-import android.net.Uri;
-import android.os.AsyncTask;
-import android.os.PersistableBundle;
-import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.AttributeSet;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
-import android.widget.AdapterView;
-import android.widget.EditText;
-import android.widget.ProgressBar;
-import android.widget.TextView;
-import android.widget.Toast;
 
-import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.ArrayList;
-
+import com.example.rkjc.news_app_2.Database.NewsItemViewModel;
+import com.firebase.jobdispatcher.FirebaseJobDispatcher;
+import com.firebase.jobdispatcher.GooglePlayDriver;
+import com.firebase.jobdispatcher.Job;
+import com.firebase.jobdispatcher.Lifetime;
+import com.firebase.jobdispatcher.Trigger;
 
 
 public class MainActivity extends AppCompatActivity implements NewsRecyclerViewAdapter.ListItemClickListner {
     private NewsRecyclerViewAdapter mAdapter;
     private RecyclerView list;
+    FirebaseJobDispatcher dispatcher;
+    NewsItemViewModel newsItemViewModel;
+    Job myJob;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        dispatcher=new FirebaseJobDispatcher(new GooglePlayDriver(getApplicationContext()));
+
+        myJob=dispatcher.newJobBuilder().setService(NewsJob.class).setTag("NewsJob")
+                .setReplaceCurrent(true).setLifetime(Lifetime.FOREVER)
+                .setRecurring(true).setTrigger(Trigger.executionWindow(10,20)).build();
+
+        dispatcher.mustSchedule(myJob);
+
+
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         list=(RecyclerView) findViewById(R.id.news_recyclerview);
         LinearLayoutManager layoutManager=new LinearLayoutManager(this);
         list.setLayoutManager(layoutManager);
-        mAdapter=new NewsRecyclerViewAdapter(this);
+
         list.setAdapter(mAdapter);
+        newsItemViewModel= ViewModelProviders.of(this).get(NewsItemViewModel.class);
+        mAdapter=new NewsRecyclerViewAdapter(this,newsItemViewModel);
+        newsItemViewModel.getAllNewsItems().observe(this, newsItems -> mAdapter.update(newsItems));
+
+
 
 
     }
@@ -47,6 +57,7 @@ public class MainActivity extends AppCompatActivity implements NewsRecyclerViewA
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.main,menu);
         return true;
+
     }
 
     @Override
@@ -55,12 +66,14 @@ public class MainActivity extends AppCompatActivity implements NewsRecyclerViewA
         {
 
 
-            Log.d("Main Activity",NetworkUtils.buildURL().toString());
+
             list=(RecyclerView) findViewById(R.id.news_recyclerview);
             LinearLayoutManager layoutManager=new LinearLayoutManager(this);
             list.setLayoutManager(layoutManager);
-            mAdapter=new NewsRecyclerViewAdapter(this);
+            mAdapter=new NewsRecyclerViewAdapter(this,newsItemViewModel);
             list.setAdapter(mAdapter);
+            newsItemViewModel.sync();
+
 
         }
         return true;
@@ -71,6 +84,12 @@ public class MainActivity extends AppCompatActivity implements NewsRecyclerViewA
         Log.d("Clicked", String.valueOf(clickedItemIndex));
         Intent intent=new Intent(Intent.ACTION_VIEW,mAdapter.getUrl(clickedItemIndex));
         startActivity(intent);
+
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
 
     }
 }

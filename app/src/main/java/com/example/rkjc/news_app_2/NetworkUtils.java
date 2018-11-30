@@ -11,13 +11,13 @@ import java.util.Scanner;
 
 public class NetworkUtils {
 
-    public static final String base_url = "https://newsapi.org/v1/articles?source=the-next-web&sortBy=latest&apiKey=b8b30184089b4414b10d74e7361ca76d";
+    public static final String base_url = "https://newsapi.org/v1/articles?source=the-next-web&sortBy=latest&apiKey=3c03d15911f946c2a8c626633b1615ca";
     public static final String source = "source";
     public static final String sourceValue = "the-next-web";
     public static final String sortBy = "sortBy";
     public static final String sortByValue = "latest";
     public static final String apiKey = "apiKey";
-    public static final String apiKeyValue = "b8b30184089b4414b10d74e7361ca76d";
+    public static final String apiKeyValue = "3c03d15911f946c2a8c626633b1615ca";
 
     public static String getResponseFromHttpUrl(URL url) throws IOException {
         HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();

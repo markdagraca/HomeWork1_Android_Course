@@ -15,6 +15,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class NewsRepository{
+    public static final String TAG="NEWSREPOSITORY";
 
     private NewsItemDao newsDao;
     private LiveData<List<NewsItem>> allNewsItems;
@@ -44,6 +45,7 @@ public class NewsRepository{
         static String results = "";
 
         insertAsyncTask(NewsItemDao dao, LiveData<List<NewsItem>> data) {
+            Log.d(TAG, "insertAsyncTask: constructor called ");
             mAsyncTaskDao = dao;
             this.data = data;
         }
@@ -54,23 +56,25 @@ public class NewsRepository{
 
             try {
                results = NetworkUtils.getResponseFromHttpUrl(NetworkUtils.buildURL());
+                ArrayList<NewsItem> parsed = JsonUtils.parseNews(results);
+                mAsyncTaskDao.clearAll();
+                for (NewsItem item : parsed) {
+
+                    mAsyncTaskDao.insert(item);
+//                Log.d("database", item.getTitle());
+
+                }
+
+
+                data = mAsyncTaskDao.loadAllNewsItems();
             } catch (IOException e) {
                 e.printStackTrace();
+                return null;
 
 
             }
 
-            ArrayList<NewsItem> parsed = JsonUtils.parseNews(results);
-            mAsyncTaskDao.clearAll();
-            for (NewsItem item : parsed) {
 
-                mAsyncTaskDao.insert(item);
-                Log.d("database", item.getTitle());
-
-            }
-
-
-            data = mAsyncTaskDao.loadAllNewsItems();
 
             return null;
         }
